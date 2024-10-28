@@ -7,10 +7,6 @@
       <button @click="clickImport">导入</button>
       <input type="file" ref="fileInputRef" @change="handleImport" accept=".xlsx, .xls" style="display: none;" />
     </div>
-    <!-- <div>
-      <div class="name">代用名1</div>
-      <div class="name">代用名2</div>
-    </div> -->
     <table>
       <thead>
         <tr>
@@ -20,7 +16,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item) in noSignList" :key="item._id">
+        <tr v-for="(item) in noSignList" :key="item.id">
           <td>{{ item.name }}</td>
           <td>{{ item.first_seat || '' }}</td>
           <td>{{ item.second_seat || '' }}</td>
@@ -33,10 +29,7 @@
 <script setup>
 import { getCurrentInstance, onMounted, ref } from 'vue'
 import * as XLSX from 'xlsx'
-
-const instance = getCurrentInstance()  // 获取当前组件实例
-const { globalProperties } = instance.appContext.config
-const db = globalProperties.$cloudbase.database();
+import axios from 'axios'
 
 // 未签到名单
 const noSignList = ref([])
@@ -46,17 +39,17 @@ const fileInputRef = ref(null)
 // 全量获取名单
 const fetchNoSign = async () => {
   try {
+    const res = await axios.get(`${import.meta.env.VITE_API_HOST}/api/no-sign/list`)
     // 获取集合数据
-    const res = await db.collection('sign_table').limit(10000).where({ sign_in_status: false }).get();
-    noSignList.value = res.data;
-    console.log("🚀 ~ getData ~ res.data:", res)
+    noSignList.value = res.data.data;
   } catch (error) {
     console.error('Error getting data:', error);
   }
 }
 
 // 导出
-const handleExport = () => {
+const handleExport = async () => {
+  await fetchNoSign()
   // 将数据转换为 JSON 格式的表格数据
   const data = noSignList.value.map((item) => ({
     '姓名': item.name,
@@ -73,18 +66,6 @@ const handleExport = () => {
   XLSX.writeFile(workbook, '未签到人员名单.xlsx');  // 导出文件，文件名可自定义
 }
 
-// 获取已有名单
-const getSignList = async() => {
-  try {
-    // 获取集合数据
-    const res = await db.collection('sign_table').limit(10000).get();
-    return res.data;
-  } catch (error) {
-    console.error('Error getting data:', error);
-    return []
-  }
-}
-
 // 点击导入
 const clickImport = () => {
   fileInputRef.value?.click?.()
@@ -95,46 +76,28 @@ const handleImport = async (event) => {
   const file = event.target.files[0]
   if (!file) return
 
-  const reader = new FileReader()
-  reader.onload = async (e) => {
-    const data = new Uint8Array(e.target.result)
-    const workbook = XLSX.read(data, { type: 'array' })
-    const firstSheetName = workbook.SheetNames[0]
-    const worksheet = workbook.Sheets[firstSheetName]
-    const jsonData = XLSX.utils.sheet_to_json(worksheet)
+  const formData = new FormData();
+  formData.append('file', file);
 
-    const signList = await getSignList()
-
-    // 假设导入数据的格式包含姓名和座位号
-    jsonData.forEach((row) => {
-      const data = {
-        name: row['姓名'] || '',
-        first_seat: row['第一排座位号'] || '',
-        second_seat: row['第二排座位号'] || '',
-        sign_in_number: 0,
-        sign_in_status: false
-      }
-
-      if (!signList.some((item) => item.name?.trim() === row['姓名']?.trim())) {
-        console.log('🚀111')
-        setTimeout(() => {
-          db.collection('sign_table')
-            .add(data)
-            .then((res) => {
-              console.log("🚀 ~ .then ~ res:", res)
-            })
-            .catch((e) => {
-              console.log("🚀 ~ setTimeout ~ e:", e)
-          })
-        }, 10)
-      }
-    })
+  try {
+    await axios.post(`${import.meta.env.VITE_API_HOST}/api/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  } catch (error) {
+    console.error(error);
+  } finally {
+    event.target.value = null; // 重置输入值
   }
-  reader.readAsArrayBuffer(file)
+}
+
+const init = async () => {
+  fetchNoSign()
 }
 
 onMounted(() => {
-  fetchNoSign()
+  init()
 })
 </script>
 

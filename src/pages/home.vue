@@ -27,18 +27,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { getCurrentInstance } from 'vue'
+import axios from 'axios'
 
 const excelData = ref([]) // 存储从Excel文件中解析的数据
 const isShowSite = ref(false) // 是否展示座位模块
 const showPlaceholder = ref(true) // 是否展示placeholder
-
-const instance = getCurrentInstance()  // 获取当前组件实例
-const { globalProperties } = instance.appContext.config
-const db = globalProperties.$cloudbase.database();
-
-// 鉴权
-const auth = globalProperties.$cloudbase?.auth?.();
 
 // 搜索名字/搜索座位号
 const searchValue = ref('')
@@ -68,60 +61,25 @@ const handleBlur = () => {
   }
 }
 
-// 获取最大签到数
-const findMaxSignInNum = async () => {
-  try {
-    const list = await db.collection('sign_table').limit(10000).get()
-    const maxNum = Math.max(...list?.data?.map?.(item => Number(item.sign_in_number)))
-    console.log("🚀 ~ findMaxSignInNum ~ maxNum:", maxNum)
-    return maxNum || 0
-  } catch (e) {
-    console.log("🚀 ~ findMaxSignInNum ~ e:", e)
-    return 0
-  }
-}
-
-// 签到
-const handleSign = async (item) => {
-  // 查询最大签到数
-  const sign_in_number = await findMaxSignInNum()
-  const updateData = { sign_in_number: sign_in_number + 1, sign_in_status: true }
-    
-  console.log("🚀 ~ handleSign ~ updateData:", updateData)
-  db.collection('sign_table')
-    .where({
-      _id: item._id
-    })
-    .update(updateData)
-    .then((res) => {
-      console.log("🚀 ~ db.collection ~ res:", item._id, res)
-    })
-    .catch((err) => {
-      console.log("🚀 ~ db.collection ~ err:", err)
-    })
-    .finally(() => {
-      // 刷新状态
-      db.collection('sign_table')
-        .limit(10000)
-        .where({ name: searchValue.value })
-        .get()
-        .then((res) => {
-          searchResults.value = res.data
-        })
-    })
-}
-
 // 搜索
-const handleSearch = () => {
+const handleSearch = async () => {
   isShowSite.value = true
-  // 查询姓名相符合，并且未签到的名单
-  searchResults.value = excelData.value.filter(row => row['name'].trim() === searchValue.value )
 
-  // 签到第一个
-  const firstNoSign = searchResults.value.filter((row) => !row.sign_in_status)
-
-  if (firstNoSign[0]) {
-    handleSign(firstNoSign[0])
+  try {
+    // 签到
+    await axios.post(`${import.meta.env.VITE_API_HOST}/api/sign`, {
+      name: searchValue.value
+    })
+  } catch (error) {
+    console.error(error)
+  } finally {
+    // 请求搜索名单
+    const res = await axios.get(`${import.meta.env.VITE_API_HOST}/api/sign`, {
+      params: {
+        name: searchValue.value
+      }
+    })
+    searchResults.value = res.data.data
   }
 }
 
@@ -129,26 +87,15 @@ const handleSearch = () => {
 const getData = async() => {
   try {
     // 获取集合数据
-    const res = await db.collection('sign_table').limit(10000).get();
-    excelData.value = res.data;
-    console.log("🚀 ~ getData ~ res.data:", res)
+    const res = await axios.get(`${import.meta.env.VITE_API_HOST}/api/no-sign/list`)
+    excelData.value = res.data.data
   } catch (error) {
     console.error('Error getting data:', error);
   }
 }
 
-// 登陆
-const login = async () =>{
-  // 调用匿名登录接口
-  await auth.anonymousAuthProvider().signIn();
-  // 匿名登录成功后，登录状态isAnonymous字段值为true
-  const loginState = await auth.getLoginState();
-  console.log(loginState.isAnonymousAuth); // true
-}
-
 // 页面初始化
 const init = async () => {
-  await login()
   getData()
 }
 
