@@ -10,13 +10,15 @@
     <table>
       <thead>
         <tr>
+          <th>序号</th>
           <th>姓名</th>
           <th>第一排座位号</th>
           <th>第二排座位号</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item) in noSignList" :key="item.id">
+        <tr v-for="(item, index) in noSignList" :key="item.id">
+          <td>{{ index + 1 }}</td>
           <td>{{ item.name }}</td>
           <td>{{ item.first_seat || '' }}</td>
           <td>{{ item.second_seat || '' }}</td>
@@ -85,6 +87,7 @@ const handleImport = async (event) => {
         'Content-Type': 'multipart/form-data',
       },
     });
+    fetchNoSign() // 导入后自动刷新
   } catch (error) {
     console.error(error);
   } finally {
@@ -115,15 +118,16 @@ onMounted(() => {
 }
 
 table {
-  width: 90%;
+  width: 96%;
   margin: 0 auto;
+  margin-bottom: 50px;
   border-collapse: collapse;
   font-family: Arial, sans-serif;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影 */
 }
 
 th, td {
-  padding: 12px 15px;
+  padding: 12px 8px;
   border: 1px solid #ddd;
   text-align: left;
 }
@@ -157,6 +161,7 @@ td {
 
 .button-container {
   margin-bottom: 12px;
+  margin-right: 12px;
   display: flex;
   justify-content: flex-end;
 }

@@ -63,8 +63,6 @@ const handleBlur = () => {
 
 // 搜索
 const handleSearch = async () => {
-  isShowSite.value = true
-
   try {
     // 签到
     await axios.post(`${import.meta.env.VITE_API_HOST}/api/sign`, {
@@ -80,6 +78,7 @@ const handleSearch = async () => {
       }
     })
     searchResults.value = res.data.data
+    isShowSite.value = true
   }
 }
 
