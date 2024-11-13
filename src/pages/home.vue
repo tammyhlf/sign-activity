@@ -161,7 +161,7 @@ onMounted(() => {
 
 .divide {
   height: 1.5px;
-  margin: 2px 60px;
+  margin: 2px 55px;
   background-color: #831a1f;
 }
 
@@ -171,15 +171,15 @@ onMounted(() => {
 .site-tip {
   margin-bottom: 1px;
   margin-top: 1px;
-  font-size: 10px;
-  transform: scale(0.9);
+  font-size: 12px;
+  transform: scale(0.95);
 }
 
 .site-tip-sub {
   margin-bottom: 1px;
-  margin-top: 1px;
-  font-size: 7px;
-  transform: scale(0.72);
+  margin-top: -1px;
+  font-size: 12px;
+  transform: scale(0.78);
 }
 
 .search {
