@@ -20,6 +20,10 @@
         <p>签到号码: <strong>{{ item.sign_in_number || '' }}</strong></p>
         <p>第一场座位: <strong>{{ item.first_seat }}</strong></p>
         <p>第二场座位: <strong>{{ item.second_seat }}</strong></p>
+        <div class="divide mt10"></div>
+        <div class="site-tip">温馨提示:面对主舞台,从右往左排列座位号</div>
+        <div class="site-tip-sub">例:“1-2”座位号对应位置为,第一排从右往左数第2列</div>
+        <div class="divide"></div>
       </div>
     </div>
   </div>
@@ -108,7 +112,7 @@ onMounted(() => {
   position: relative;
   width: 100vw;
   height: 100vh;
-  background-image: url('../assets/red-bg.jpeg');
+  background-image: url('../assets/red-bg.webp');
   background-size: 100% 100%;
   color: #fff;
 }
@@ -142,11 +146,40 @@ onMounted(() => {
   width: 330px;
   max-height: 50%;
   overflow-y: scroll;
+  background-color: rgba(232, 189, 164, 0.8);
+  border-radius: 30px;
+  padding-bottom: 5px;
 }
 
 .site-item {
-  background-color: rgba(236, 167, 128, .6);
-  border-radius: 30px;
+  padding: 2px;
+}
+
+.site-item > p {
+  margin: 15px 0px;
+}
+
+.divide {
+  height: 1.5px;
+  margin: 2px 60px;
+  background-color: #831a1f;
+}
+
+.mt10 {
+  margin-top: 30px !important;
+}
+.site-tip {
+  margin-bottom: 1px;
+  margin-top: 1px;
+  font-size: 10px;
+  transform: scale(0.9);
+}
+
+.site-tip-sub {
+  margin-bottom: 1px;
+  margin-top: 1px;
+  font-size: 7px;
+  transform: scale(0.72);
 }
 
 .search {
