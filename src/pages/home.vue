@@ -156,7 +156,7 @@ onMounted(() => {
 }
 
 .site-item > p {
-  margin: 15px 0px;
+  margin: 12px 0px;
 }
 
 .divide {
@@ -166,7 +166,7 @@ onMounted(() => {
 }
 
 .mt10 {
-  margin-top: 30px !important;
+  margin-top: 25px !important;
 }
 .site-tip {
   margin-bottom: 1px;
