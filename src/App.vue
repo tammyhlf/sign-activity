@@ -1,10 +1,10 @@
 <template>
   <div id="app">
     <router-view></router-view>  <!-- 渲染匹配路由的组件 -->
-    <button @click="handleSearch">查询</button>
+    <!-- <button @click="handleSearch">查询</button>
     <button @click="handleInsert">插入</button>
     <button @click="handleDelete">删除</button>
-    <button @click="handleSign">签到</button>
+    <button @click="handleSign">签到</button> -->
   </div>
 </template>
 

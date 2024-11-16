@@ -1,30 +1,38 @@
 <template>
   <div class="background">
-    <div class="input-area" v-if="!showResults">
-      <div
-        type="text"
-        @input="handleInput"
-        @focus="handleFocus"
-        @blur="handleBlur"
-        class="search-input"
-        contenteditable="true"
-      >
-        <span v-show="showPlaceholder" class="placeholder">请输入名字以查找座位号</span>
+    <div class="input-area">
+      <div class="search-area">
+        <div
+          type="text"
+          @input="handleInput"
+          @focus="handleFocus"
+          @blur="handleBlur"
+          class="search-input"
+          contenteditable="true"
+        >
+          <span v-show="showPlaceholder" class="placeholder">请输入名字以查找座位号</span>
+        </div>
+        <div class="search" @click="handleSearch">立即查询</div>
       </div>
-      <div class="search" @click="handleSearch">立即查询</div>
+      <!-- <p v-if="searchValue && isShowSite">未找到对应的座位号</p> -->
+      <div v-if="showResults" class="site-box">
+        <div class="site-item" v-for="(item) in searchResults" :key="item._id">
+          <div class="info">
+            <p>姓名: <strong>{{item.name}}</strong></p>
+            <!-- <p>签到号码: <strong>{{ item.sign_in_number || '' }}</strong></p> -->
+            <p>座位号: <strong>{{ item.seat || '' }}</strong></p>
+            <!-- <div class="divide mt10"></div>
+            <div class="site-tip">温馨提示:面对主舞台,从右往左排列座位号</div>
+            <div class="site-tip-sub">例:“1-2”座位号对应位置为,第一排从右往左数第2列</div>
+            <div class="divide"></div> -->
+          </div>
+          <div class="sign-button">
+            <div v-if="item.sign_status === 1" class="tip">已签到</div>
+            <div v-else class="button" @click="() => handleSign(item)">点击签到</div>
+          </div>
+        </div>
+      </div>
       <p v-if="searchValue && isShowSite">未找到对应的座位号</p>
-    </div>
-    <div v-else class="site-box">
-      <div class="site-item" v-for="(item) in searchResults" :key="item._id">
-        <p>姓名: <strong>{{item.name}}</strong></p>
-        <p>签到号码: <strong>{{ item.sign_in_number || '' }}</strong></p>
-        <p>第一场座位: <strong>{{ item.first_seat }}</strong></p>
-        <p>第二场座位: <strong>{{ item.second_seat }}</strong></p>
-        <div class="divide mt10"></div>
-        <div class="site-tip">温馨提示:面对主舞台,从右往左排列座位号</div>
-        <div class="site-tip-sub">例:“1-2”座位号对应位置为,第一排从右往左数第2列</div>
-        <div class="divide"></div>
-      </div>
     </div>
   </div>
 </template>
@@ -68,21 +76,32 @@ const handleBlur = () => {
 // 搜索
 const handleSearch = async () => {
   try {
-    // 签到
-    await axios.post(`${import.meta.env.VITE_API_HOST}/api/sign`, {
-      name: searchValue.value
-    })
-  } catch (error) {
-    console.error(error)
-  } finally {
-    // 请求搜索名单
-    const res = await axios.get(`${import.meta.env.VITE_API_HOST}/api/sign`, {
+    const res = await axios.get(`${import.meta.env.VITE_API_HOST}/api/search`, {
       params: {
         name: searchValue.value
       }
     })
+
     searchResults.value = res.data.data
     isShowSite.value = true
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+// 签到
+const handleSign = async (item) => {
+  debugger
+  try {
+    // 签到
+    await axios.post(`${import.meta.env.VITE_API_HOST}/api/sign`, {
+      id: item.id,
+      name: item.name,
+    })
+  } catch (error) {
+    console.error(error)
+  } finally {
+    handleSearch()
   }
 }
 
@@ -117,14 +136,22 @@ onMounted(() => {
   color: #fff;
 }
 .input-area {
-  position: absolute;
+  /* position: absolute; */
+  position: relative;
   top: 40%;
-  left: 50%;
-  transform: translateX(-50%);
+  padding: 0px 20px;
+  height: calc(100vh - 40%);
+  /* left: 50%; */
+  /* transform: translateX(-50%); */
+}
+
+.search-area {
+  display: flex;
 }
 .search-input {
+  flex: 1;
   height: 45px;
-  width: 330px;
+  /* width: 330px; */
   line-height: 45px;
   margin-bottom: 20px;
   background-color: #fff;
@@ -137,26 +164,59 @@ onMounted(() => {
   pointer-events: none;
 }
 .site-box {
-  position: absolute;
+  /* position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); */
   font-size: 20px;
   color: #831a1f;
-  width: 330px;
-  max-height: 50%;
+  /* width: 330px; */
+  max-height: 80%;
   overflow-y: scroll;
-  background-color: rgba(232, 189, 164, 0.8);
-  border-radius: 30px;
+  /* background-color: rgba(232, 189, 164, 0.8); */
+  /* border-radius: 30px; */
   padding-bottom: 5px;
 }
 
 .site-item {
-  padding: 2px;
+  display: flex;
+  padding: 16px;
+  margin-bottom: 20px;
+  background-color: rgba(232, 189, 164, 0.8);
+  border-radius: 12px;
+
 }
 
-.site-item > p {
-  margin: 12px 0px;
+.site-item .info {
+  flex: 1;
+}
+
+.site-item .info > p {
+  margin: 0px;
+  font-size: 18px;
+  text-align: left;
+}
+
+.site-item .sign-button {
+  margin-left: 8px;
+  width: 60px;
+  line-height: 45px;
+  color: #fff;
+  font-size: 12px;
+}
+
+.site-item .sign-button .tip {
+  line-height: 45px;
+  background-color: #3b8221;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.site-item .sign-button .button {
+  line-height: 45px;
+  background-color: #831a1f;
+  border-radius: 20px;
+  font-size: 12px;
 }
 
 .divide {
@@ -183,8 +243,10 @@ onMounted(() => {
 }
 
 .search {
+  margin-left: 12px;
+  width: 100px;
   height: 45px;
-  width: 330px;
+  /* width: 330px; */
   line-height: 45px;
   background-color: #831a1f;
   border-radius: 20px;
