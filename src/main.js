@@ -6,8 +6,8 @@ import NoSign from './pages/no-sign.vue'
 import router from './router' // 引入路由
 import cloudbase from '@cloudbase/js-sdk'
 
-// const app = createApp(Home)
-const app = createApp(NoSign)
+const app = createApp(Home)
+// const app = createApp(NoSign)
 // const app = createApp(App)
 
 // 初始化 CloudBase

@@ -14,7 +14,6 @@
         </div>
         <div class="search" @click="handleSearch">立即查询</div>
       </div>
-      <!-- <p v-if="searchValue && isShowSite">未找到对应的座位号</p> -->
       <div v-if="showResults" class="site-box">
         <div class="site-item" v-for="(item) in searchResults" :key="item._id">
           <div class="info">
@@ -32,7 +31,7 @@
           </div>
         </div>
       </div>
-      <p v-if="searchValue && isShowSite">未找到对应的座位号</p>
+      <p v-if="isNoResult">未找到对应的座位号</p>
     </div>
   </div>
 </template>
@@ -42,7 +41,7 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 
 const excelData = ref([]) // 存储从Excel文件中解析的数据
-const isShowSite = ref(false) // 是否展示座位模块
+const isNoResult = ref(false) // 是否展没有结果
 const showPlaceholder = ref(true) // 是否展示placeholder
 
 // 搜索名字/搜索座位号
@@ -58,7 +57,7 @@ const handleInput = (e) => {
   searchValue.value = e.target.innerText.trim()
   // 输入清空名单
   searchResults.value = []
-  isShowSite.value = false
+  isNoResult.value = false
 }
 
 // 聚焦
@@ -83,7 +82,10 @@ const handleSearch = async () => {
     })
 
     searchResults.value = res.data.data
-    isShowSite.value = true
+    // 查询不到结果展示
+    if (searchResults.value.length <= 0) {
+      isNoResult.value = true
+    }
   } catch (error) {
     console.error(error)
   }

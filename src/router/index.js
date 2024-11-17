@@ -21,8 +21,9 @@ const routes = [
 ]
 
 const router = createRouter({
-  // history: createWebHistory(import.meta.env.BASE_URL),
-  history: createWebHistory(),
+  // 阿里云打包路径用 sign-activity, 腾讯云传空字符串就好
+  // history: createWebHistory('/sign-activity'),
+  history: createWebHistory(''),
   routes,
 })
 
